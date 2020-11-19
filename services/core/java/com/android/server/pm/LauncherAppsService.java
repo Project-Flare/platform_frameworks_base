@@ -1207,6 +1207,9 @@ public class LauncherAppsService extends SystemService {
 
         private void ensureShortcutPermission(int callerUid, int callerPid,
                 @NonNull String callingPackage) {
+            if (com.android.internal.util.flare.PixelPropsUtils.isSystemLauncher(callerUid)) {
+                return;
+            }
             verifyCallingPackage(callingPackage, callerUid);
             if (!mShortcutServiceInternal.hasShortcutHostPermission(UserHandle.getUserId(callerUid),
                     callingPackage, callerPid, callerUid)) {
