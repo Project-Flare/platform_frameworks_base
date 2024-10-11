@@ -23,10 +23,6 @@
     <!-- For dynamic default font styles -->
     <java-symbol type="string" name="config_bodyFontFamily" />
 
-    <!-- Settings Restart -->
-    <java-symbol type="string" name="settings_restart_title" />
-    <java-symbol type="string" name="settings_restart_message" />
-
     <!-- App error dialog -->
     <java-symbol type="id" name="aerr_copy" />
     <java-symbol type="string" name="url_copy_success" />
@@ -184,5 +180,18 @@
 
     <!-- Whitelist of package names to bypass broadcast reciever validation -->
     <java-symbol type="array" name="config_broadcastReceiverValidationBypassPackages"/>
+
+    <!-- Settings Restart -->
+    <java-symbol type="string" name="settings_restart_title" />
+    <java-symbol type="string" name="settings_restart_message" />
+    <!-- Soft restart dialog -->
+    <java-symbol type="string" name="system_restart_title" />
+    <java-symbol type="string" name="system_restart_message" />
+    <!-- SystemUI restart dialog -->
+    <java-symbol type="string" name="systemui_restart_title" />
+    <java-symbol type="string" name="systemui_restart_message" />
+    <!-- Launcher restart dialog -->
+    <java-symbol type="string" name="launcher_restart_title" />
+    <java-symbol type="string" name="launcher_restart_message" />
 
 </resources>
