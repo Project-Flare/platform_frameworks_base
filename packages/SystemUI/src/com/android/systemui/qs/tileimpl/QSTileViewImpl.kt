@@ -62,6 +62,7 @@ import androidx.core.graphics.drawable.updateBounds
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.traceSection
 import com.android.settingslib.Utils
+import com.android.systemui.Dependency
 import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
 import com.android.systemui.animation.LaunchableView
@@ -76,6 +77,7 @@ import com.android.systemui.qs.TileUtils
 import com.android.systemui.qs.logging.QSLogger
 import com.android.systemui.qs.tileimpl.QSIconViewImpl.QS_ANIM_LENGTH
 import com.android.systemui.res.R
+import com.android.systemui.tuner.TunerService
 import java.util.Objects
 
 private const val TAG = "QSTileViewImpl"
@@ -86,7 +88,7 @@ constructor(
     context: Context,
     private val collapsed: Boolean = false,
     private val longPressEffect: QSLongPressEffect? = null,
-) : QSTileView(context), HeightOverrideable, LaunchableView {
+) : QSTileView(context), HeightOverrideable, LaunchableView, TunerService.Tunable {
 
     companion object {
         private const val INVALID = -1
@@ -101,6 +103,9 @@ constructor(
         @VisibleForTesting internal const val LONG_PRESS_EFFECT_WIDTH_SCALE = 1.1f
         @VisibleForTesting internal const val LONG_PRESS_EFFECT_HEIGHT_SCALE = 1.2f
         internal val EMPTY_RECT = Rect()
+
+        private const val QS_TILE_UI_STYLE: String =
+                "system:" + Settings.System.QS_TILE_UI_STYLE
     }
 
     private val icon: QSIconViewImpl = QSIconViewImpl(context)
@@ -127,7 +132,7 @@ constructor(
             updateHeight()
         }
 
-    private val isA11Style: Boolean = Settings.System.getIntForUser(
+    private var isA11Style: Boolean = Settings.System.getIntForUser(
             context.contentResolver,
             Settings.System.QS_TILE_UI_STYLE, 0, UserHandle.USER_CURRENT
         ) != 0
@@ -296,9 +301,18 @@ constructor(
             addView(icon, LayoutParams(iconSize, iconSize))
         }
 
+        val tunerService = Dependency.get(TunerService::class.java)
+        tunerService.addTunable(this, QS_TILE_UI_STYLE)
+
         createAndAddLabels()
         createAndAddSideView()
         updateResources()
+    }
+
+    override fun onTuningChanged(key: String, newValue: String?) {
+        if (key == QS_TILE_UI_STYLE) {
+            isA11Style = TunerService.parseIntegerSwitch(newValue, false)
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration?) {
