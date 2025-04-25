@@ -168,4 +168,8 @@
     <java-symbol type="string" name="config_oemFastChargerStatusPath2" />
     <!-- Expected value from fast charging status file -->
     <java-symbol type="string" name="config_oemFastChargerStatusValue" />
+
+    <!-- GameSpace -->
+    <java-symbol type="string" name="gamespace_new_game_added" />
+
 </resources>
