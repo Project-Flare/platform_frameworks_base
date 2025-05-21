@@ -68,11 +68,15 @@ public final class PixelPropsUtils {
     private static final String PACKAGE_GOOGLE = "com.google";
     private static final String PACKAGE_NEXUS_LAUNCHER = "com.google.android.apps.nexuslauncher";
     private static final String PACKAGE_SI = "com.google.android.settings.intelligence";
+    private static final String PACKAGE_VENDING = "com.android.vending";
+    private static final int VENDING_TARGET_SDK_INT = 32;
+    private static final String VENDING_TARGET_RELEASE_VERSION = "12";
     private static final String SPOOF_PIXEL_PROPS = "persist.sys.pphooks.enable";
 
     private static final String PROP_HOOKS = "persist.sys.pihooks_";
     public static final String SPOOF_PIXEL_GMS = "persist.sys.pixelprops.gms";
     public static final String ENABLE_GAME_PROP_OPTIONS = "persist.sys.gameprops.enabled";
+    public static final String SPOOF_VENDING_SDK32_ENABLED = "persist.sys.spoof.vending_sdk32";
 
     private static final String TAG = PixelPropsUtils.class.getSimpleName();
     private static final boolean DEBUG = false;
@@ -285,6 +289,13 @@ public final class PixelPropsUtils {
             return;
         }
         setGameProps(packageName);
+        if (packageName.equals(PACKAGE_VENDING)) {
+            if (SystemProperties.getBoolean(SPOOF_VENDING_SDK32_ENABLED, false)) {
+                dlog("Spoofing SDK version for " + packageName + " to SDK " + VENDING_TARGET_SDK_INT);
+                setVersionFieldInt("SDK_INT", VENDING_TARGET_SDK_INT);
+                setVersionFieldString("RELEASE", VENDING_TARGET_RELEASE_VERSION);
+            }
+        }
         if (sIsGms) {
             if (shouldTryToCertifyDevice()) {
                 if (!isPixelGmsEnabled) {
@@ -605,7 +616,7 @@ public final class PixelPropsUtils {
         // Check if the app is whitelisted
         if (Arrays.asList(
                         getStringArrayResSafely(
-                                R.array.config_broadcaseReceiverValidationBypassPackages))
+                                R.array.config_broadcastReceiverValidationBypassPackages))
                 .contains(packageName)) {
             dlog(
                     "shouldBypassBroadcastReceiverValidation: "
