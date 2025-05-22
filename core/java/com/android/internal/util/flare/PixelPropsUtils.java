@@ -150,7 +150,7 @@ public final class PixelPropsUtils {
     private static final String[] GMS_SPOOF_KEYS = {
         "BRAND", "DEVICE", "DEVICE_INITIAL_SDK_INT", "FINGERPRINT", "ID",
         "MANUFACTURER", "MODEL", "PRODUCT", "RELEASE", "SECURITY_PATCH",
-        "TAGS", "TYPE"
+        "TAGS", "TYPE", "SDK_INT"
     };
 
     private static final ComponentName GMS_ADD_ACCOUNT_ACTIVITY = ComponentName.unflattenFromString(
