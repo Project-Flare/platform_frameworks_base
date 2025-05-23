@@ -69,14 +69,11 @@ public final class PixelPropsUtils {
     private static final String PACKAGE_NEXUS_LAUNCHER = "com.google.android.apps.nexuslauncher";
     private static final String PACKAGE_SI = "com.google.android.settings.intelligence";
     private static final String PACKAGE_VENDING = "com.android.vending";
-    private static final int VENDING_TARGET_SDK_INT = 32;
-    private static final String VENDING_TARGET_RELEASE_VERSION = "12";
     private static final String SPOOF_PIXEL_PROPS = "persist.sys.pphooks.enable";
 
     private static final String PROP_HOOKS = "persist.sys.pihooks_";
     public static final String SPOOF_PIXEL_GMS = "persist.sys.pixelprops.gms";
     public static final String ENABLE_GAME_PROP_OPTIONS = "persist.sys.gameprops.enabled";
-    public static final String SPOOF_VENDING_SDK32_ENABLED = "persist.sys.spoof.vending_sdk32";
 
     private static final String TAG = PixelPropsUtils.class.getSimpleName();
     private static final boolean DEBUG = false;
@@ -156,7 +153,7 @@ public final class PixelPropsUtils {
     private static final ComponentName GMS_ADD_ACCOUNT_ACTIVITY = ComponentName.unflattenFromString(
             "com.google.android.gms/.auth.uiflows.minutemaid.MinuteMaidActivity");
 
-    private static volatile boolean sIsGms, sIsExcluded;
+    private static volatile boolean sIsGms, sIsFinsky, sIsExcluded;
     private static volatile String sProcessName;
 
     static {
@@ -274,6 +271,7 @@ public final class PixelPropsUtils {
         Context appContext = context.getApplicationContext();
         final boolean sIsTablet = isDeviceTablet(appContext);
         sProcessName = processName;
+        sIsFinsky = packageName.equals(PACKAGE_VENDING);
         sIsGms = packageName.equals(PACKAGE_GMS) && processName.equals(PROCESS_GMS_UNSTABLE);
         sIsExcluded = isGoogleCameraPackage(packageName);
         String model = SystemProperties.get("ro.product.model");
@@ -289,13 +287,7 @@ public final class PixelPropsUtils {
             return;
         }
         setGameProps(packageName);
-        if (packageName.equals(PACKAGE_VENDING)) {
-            if (SystemProperties.getBoolean(SPOOF_VENDING_SDK32_ENABLED, false)) {
-                dlog("Spoofing SDK version for " + packageName + " to SDK " + VENDING_TARGET_SDK_INT);
-                setVersionFieldInt("SDK_INT", VENDING_TARGET_SDK_INT);
-                setVersionFieldString("RELEASE", VENDING_TARGET_RELEASE_VERSION);
-            }
-        }
+        spoofAttestationToLegacy();
         if (sIsGms) {
             if (shouldTryToCertifyDevice()) {
                 if (!isPixelGmsEnabled) {
@@ -385,6 +377,17 @@ public final class PixelPropsUtils {
                 dlog("Defining " + key + " prop for: " + packageName);
                 setPropValue(key, value);
             }
+        }
+    }
+
+    private static void spoofAttestationToLegacy() {
+        if (!SystemProperties.getBoolean(SPOOF_PIXEL_GMS, true))
+            return;
+        if (sIsGms || sIsFinsky) {
+            String phReleaseInt = SystemProperties.get(PROP_HOOKS + "RELEASE", "12");
+            String phSdk = SystemProperties.get(PROP_HOOKS + "SDK_INT", "32");
+            setPropValue("RELEASE", phReleaseInt);
+            setPropValue("SDK_INT", phSdk);
         }
     }
 
@@ -638,7 +641,7 @@ public final class PixelPropsUtils {
         if (!isPixelGmsEnabled)
             return;
         // Check stack for SafetyNet or Play Integrity
-        if (isCallerSafetyNet() && !sIsExcluded) {
+        if (isCallerSafetyNet() || sIsFinsky && !sIsExcluded) {
             dlog("Blocked key attestation");
             throw new UnsupportedOperationException();
         }
